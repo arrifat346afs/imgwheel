@@ -5,6 +5,7 @@ pub mod daemon;
 pub mod hypr;
 pub mod notify;
 pub mod pill;
+pub mod selection;
 pub mod settings_ui;
 pub mod wheel;
 
@@ -18,7 +19,6 @@ use converter::{
 use eframe::egui::{self, Color32, Ui, ViewportBuilder};
 use eframe::{App, Frame};
 use rayon::prelude::*;
-use std::io::{self, BufRead};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -350,6 +350,74 @@ fn execute_batch_conversions(
     (success, fail)
 }
 
+fn install_integrations_cli() {
+    let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
+    let home_path = PathBuf::from(home);
+
+    println!("Installing ImgWheel file manager integrations...");
+
+    // 1. Nautilus Extension
+    let nautilus_ext_dir = home_path.join(".local/share/nautilus-python/extensions");
+    let _ = std::fs::create_dir_all(&nautilus_ext_dir);
+    let nautilus_ext_file = nautilus_ext_dir.join("imgwheel.py");
+    let nautilus_code = include_str!("../../../data/file-manager/nautilus/imgwheel-nautilus.py");
+    if std::fs::write(&nautilus_ext_file, nautilus_code).is_ok() {
+        println!("  ✓ Nautilus Python extension installed at {:?}", nautilus_ext_file);
+    }
+
+    // 2. Nautilus Script
+    let nautilus_scripts_dir = home_path.join(".local/share/nautilus/scripts");
+    let _ = std::fs::create_dir_all(&nautilus_scripts_dir);
+    let nautilus_script_file = nautilus_scripts_dir.join("Convert with ImgWheel");
+    let script_code = include_str!("../../../data/file-manager/nautilus/Convert with ImgWheel");
+    if std::fs::write(&nautilus_script_file, script_code).is_ok() {
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let _ = std::fs::set_permissions(
+                &nautilus_script_file,
+                std::fs::Permissions::from_mode(0o755),
+            );
+        }
+        println!("  ✓ Nautilus Script installed at {:?}", nautilus_script_file);
+    }
+
+    // 3. Dolphin Service Menus
+    let dolphin_dirs = [
+        home_path.join(".local/share/kservices5/ServiceMenus"),
+        home_path.join(".local/share/kio/servicemenus"),
+    ];
+    let dolphin_code = include_str!("../../../data/file-manager/dolphin/imgwheel.desktop");
+    for dir in &dolphin_dirs {
+        let _ = std::fs::create_dir_all(dir);
+        let dest = dir.join("imgwheel.desktop");
+        if std::fs::write(&dest, dolphin_code).is_ok() {
+            println!("  ✓ Dolphin Service Menu installed at {:?}", dest);
+        }
+    }
+
+    // 4. Nemo Action
+    let nemo_dir = home_path.join(".local/share/nemo/actions");
+    let _ = std::fs::create_dir_all(&nemo_dir);
+    let nemo_file = nemo_dir.join("imgwheel.nemo_action");
+    let nemo_code = include_str!("../../../data/file-manager/nemo/imgwheel.nemo_action");
+    if std::fs::write(&nemo_file, nemo_code).is_ok() {
+        println!("  ✓ Nemo Action installed at {:?}", nemo_file);
+    }
+
+    // 5. Desktop File
+    let apps_dir = home_path.join(".local/share/applications");
+    let _ = std::fs::create_dir_all(&apps_dir);
+    let desktop_file = apps_dir.join("imgwheel.desktop");
+    let desktop_code = include_str!("../../../data/imgwheel.desktop");
+    if std::fs::write(&desktop_file, desktop_code).is_ok() {
+        println!("  ✓ Desktop application entry installed at {:?}", desktop_file);
+    }
+
+    println!("\nAll integrations installed successfully!");
+    println!("Tip: If using Nautilus, restart it to reload python extensions: `nautilus -q`");
+}
+
 fn open_settings_window(config: Config) {
     let native_options = eframe::NativeOptions {
         viewport: ViewportBuilder::default()
@@ -400,6 +468,10 @@ fn main() {
                 println!("{}", hyprland_config_snippet());
                 std::process::exit(0);
             }
+            Commands::InstallIntegrations => {
+                install_integrations_cli();
+                std::process::exit(0);
+            }
             Commands::Settings => {
                 open_settings_window(config);
                 std::process::exit(0);
@@ -417,47 +489,11 @@ fn main() {
         }
     }
 
-    // 2. Collect input files
-    let mut files = cli.files;
-
-    if cli.demo {
-        let demo_path = std::env::temp_dir().join("imgwheel_demo.png");
-        let mut img = image::RgbaImage::new(128, 128);
-        for (x, y, pixel) in img.enumerate_pixels_mut() {
-            *pixel = image::Rgba([(x * 2) as u8, (y * 2) as u8, 180, 255]);
-        }
-        let _ = img.save(&demo_path);
-        files.push(demo_path);
-    }
-
-    if cli.stdin {
-        let stdin = io::stdin();
-        for line in stdin.lock().lines().map_while(Result::ok) {
-            let trimmed = line.trim();
-            if !trimmed.is_empty() {
-                files.push(PathBuf::from(trimmed));
-            }
-        }
-    }
-
-    // If no files passed directly, try IPC check or file picker
+    // 2. Collect and resolve input files (CLI, stdin, file manager cache, active window Ctrl+C, clipboard, picker)
+    let files = selection::resolve_input_files(&cli.files, cli.stdin, cli.demo);
     if files.is_empty() {
-        if let Some(selected) = rfd::FileDialog::new()
-            .set_title("Select images to convert with ImgWheel")
-            .pick_files()
-        {
-            files = selected;
-        } else {
-            // User cancelled picker
-            std::process::exit(0);
-        }
-    }
-
-    // Filter to existing files
-    files.retain(|p| p.exists() && p.is_file());
-    if files.is_empty() {
-        error!("No valid input image files found");
-        std::process::exit(2);
+        // User cancelled or no valid image files found
+        std::process::exit(0);
     }
 
     // 3. Try forwarding to running daemon if direct CLI mode without skipping wheel

@@ -183,18 +183,24 @@ systemctl --user enable --now imgwheel-daemon.service
 
 ---
 
-## 📁 File Manager Integration
+## 📁 File Manager Integration & Auto-Selection
 
-Integration scripts and templates are provided in `data/file-manager/`:
+ImgWheel features smart selection detection:
+- **Instant Hotkey Conversion**: Simply highlight/select an image in your file manager (e.g. Nautilus, Dolphin, Thunar, Nemo) and press your ImgWheel shortcut (e.g. `ALT + T` or `SUPER + C`). ImgWheel automatically detects the focused file manager, retrieves the selected file(s), and pops up the radial wheel without asking you to re-pick the file!
+- **Clipboard & URI Support**: Automatically converts file URIs (`text/uri-list`, `x-special/gnome-copied-files`, `file://`), copied paths, or even raw screenshot images copied to your clipboard.
 
-- **Nautilus (GNOME Files)**:
-  Copy `data/file-manager/nautilus/Convert with ImgWheel` to `~/.local/share/nautilus/scripts/` and `chmod +x`.
-- **Dolphin (KDE)**:
-  Copy `data/file-manager/dolphin/imgwheel.desktop` to `~/.local/share/kservices5/ServiceMenus/` (or `~/.local/share/kio/servicemenus/`).
-- **Thunar (XFCE)**:
-  Import the XML snippet from `data/file-manager/thunar/uca.xml` into `~/.config/Thunar/uca.xml`.
-- **Nemo (Cinnamon)**:
-  Copy `data/file-manager/nemo/imgwheel.nemo_action` to `~/.local/share/nemo/actions/`.
+### One-Click Installer:
+Run:
+```bash
+imgwheel install-integrations
+```
+This automatically installs:
+- **Nautilus Python Extension** (`~/.local/share/nautilus-python/extensions/imgwheel.py`): Adds right-click "Convert with ImgWheel" and caches active selections. (Reload Nautilus with `nautilus -q`).
+- **Nautilus Script** (`~/.local/share/nautilus/scripts/Convert with ImgWheel`)
+- **Dolphin Service Menus** (`~/.local/share/kservices5/ServiceMenus/` & `~/.local/share/kio/servicemenus/`)
+- **Nemo Action** (`~/.local/share/nemo/actions/imgwheel.nemo_action`)
+- **Desktop Launcher** (`~/.local/share/applications/imgwheel.desktop`)
+- **Thunar**: Import the XML snippet in `data/file-manager/thunar/uca.xml` into `~/.config/Thunar/uca.xml`.
 
 ---
 

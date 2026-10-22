@@ -49,4 +49,6 @@ pub enum Commands {
     Daemon,
     /// Print recommended Hyprland keybind and window rules
     InstallHyprland,
+    /// Install Nautilus, Dolphin, Thunar, and Nemo file manager integrations
+    InstallIntegrations,
 }

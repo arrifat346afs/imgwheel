@@ -1,6 +1,13 @@
 #!/bin/sh
 # Nautilus Script for ImgWheel
 # Place this file in ~/.local/share/nautilus/scripts/
-# Make sure to chmod +x this script.
 
-imgwheel "$@"
+if [ "$#" -gt 0 ]; then
+    imgwheel "$@"
+elif [ -n "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" ]; then
+    echo "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | imgwheel --stdin
+elif [ -n "$NAUTILUS_SCRIPT_SELECTED_URIS" ]; then
+    echo "$NAUTILUS_SCRIPT_SELECTED_URIS" | imgwheel --stdin
+else
+    imgwheel
+fi

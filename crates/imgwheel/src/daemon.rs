@@ -157,19 +157,7 @@ async fn init_global_shortcuts(config: Config) -> ashpd::Result<()> {
 }
 
 fn trigger_from_shortcut() {
-    // 1. Try reading clipboard for files
-    let mut files = get_files_from_clipboard();
-
-    // 2. Fallback to file picker if clipboard has no image files
-    if files.is_empty() {
-        if let Some(selected) = rfd::FileDialog::new()
-            .set_title("Select images to convert with ImgWheel")
-            .pick_files()
-        {
-            files = selected;
-        }
-    }
-
+    let files = crate::selection::resolve_input_files(&[], false, false);
     if !files.is_empty() {
         let mut cmd =
             Command::new(std::env::current_exe().unwrap_or_else(|_| PathBuf::from("imgwheel")));
@@ -180,25 +168,6 @@ fn trigger_from_shortcut() {
     }
 }
 
-fn get_files_from_clipboard() -> Vec<PathBuf> {
-    let mut files = Vec::new();
-    // Try wl-paste if on wayland
-    if let Ok(output) = Command::new("wl-paste")
-        .args(["-t", "text/uri-list"])
-        .output()
-    {
-        if output.status.success() {
-            let s = String::from_utf8_lossy(&output.stdout);
-            for line in s.lines() {
-                let trimmed = line.trim();
-                if let Some(path_str) = trimmed.strip_prefix("file://") {
-                    let path = PathBuf::from(path_str);
-                    if path.exists() {
-                        files.push(path);
-                    }
-                }
-            }
-        }
-    }
-    files
+pub fn get_files_from_clipboard() -> Vec<PathBuf> {
+    crate::selection::get_files_from_clipboard()
 }
