@@ -1,0 +1,14 @@
+[Unit]
+Description=ImgWheel Background Daemon (Global Shortcuts & Fast IPC)
+Documentation=https://github.com/user/imgwheel
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/imgwheel daemon
+Restart=on-failure
+RestartSec=2s
+
+[Install]
+WantedBy=graphical-session.target

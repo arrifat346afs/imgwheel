@@ -1,0 +1,70 @@
+# Maintainer: Arch Hyprland Community
+pkgname=imgwheel
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="A fast radial image format converter for Linux (Hyprland / Wayland / X11)"
+arch=('x86_64')
+url="https://github.com/user/imgwheel"
+license=('MIT')
+depends=(
+    'gcc-libs'
+    'libheif'
+    'ghostscript'
+    'dav1d'
+    'wayland'
+    'libxkbcommon'
+)
+makedepends=(
+    'cargo'
+    'pkg-config'
+)
+optdepends=(
+    'wl-clipboard: clipboard reading in daemon mode on Wayland'
+    'xdg-desktop-portal-hyprland: global shortcuts support under Hyprland'
+)
+source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+prepare() {
+    cd "$pkgname-$pkgver"
+    cargo fetch --locked --target "$CARCH-unknown-linux-gnu"
+}
+
+build() {
+    cd "$pkgname-$pkgver"
+    export RUSTUP_TOOLCHAIN=stable
+    export CARGO_TARGET_DIR=target
+    cargo build --frozen --release --bin imgwheel
+}
+
+check() {
+    cd "$pkgname-$pkgver"
+    export RUSTUP_TOOLCHAIN=stable
+    cargo test --frozen --workspace
+}
+
+package() {
+    cd "$pkgname-$pkgver"
+
+    # Binary
+    install -Dm755 target/release/imgwheel "$pkgdir/usr/bin/imgwheel"
+
+    # Desktop entry
+    install -Dm644 data/imgwheel.desktop "$pkgdir/usr/share/applications/imgwheel.desktop"
+
+    # Systemd user service
+    install -Dm644 data/imgwheel-daemon.service "$pkgdir/usr/lib/systemd/user/imgwheel-daemon.service"
+
+    # License
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+
+    # Documentation & examples
+    install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+    install -Dm644 CHANGELOG.md "$pkgdir/usr/share/doc/$pkgname/CHANGELOG.md"
+
+    # File manager integration examples
+    install -Dm755 "data/file-manager/nautilus/Convert with ImgWheel" "$pkgdir/usr/share/doc/$pkgname/examples/nautilus/Convert with ImgWheel"
+    install -Dm644 data/file-manager/dolphin/imgwheel.desktop "$pkgdir/usr/share/doc/$pkgname/examples/dolphin/imgwheel.desktop"
+    install -Dm644 data/file-manager/thunar/uca.xml "$pkgdir/usr/share/doc/$pkgname/examples/thunar/uca.xml"
+    install -Dm644 data/file-manager/nemo/imgwheel.nemo_action "$pkgdir/usr/share/doc/$pkgname/examples/nemo/imgwheel.nemo_action"
+}

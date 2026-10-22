@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=ImgWheel
+GenericName=Radial Image Converter
+Comment=Fast radial image format converter for Linux (Hyprland / Wayland)
+Exec=imgwheel %F
+Icon=image-x-generic
+Terminal=false
+MimeType=image/png;image/jpeg;image/bmp;image/webp;image/avif;image/heic;image/heif;application/postscript;
+Categories=Graphics;2DGraphics;RasterGraphics;Utility;
+Keywords=image;convert;converter;hyprland;radial;wheel;format;
+StartupNotify=true
+StartupWMClass=imgwheel

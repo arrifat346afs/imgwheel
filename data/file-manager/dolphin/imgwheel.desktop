@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=KonqPopupMenu/Plugin
+MimeType=image/png;image/jpeg;image/bmp;image/webp;image/avif;image/heic;image/heif;application/postscript;
+Actions=convertWithImgWheel;
+X-KDE-Submenu=ImgWheel
+
+[Desktop Action convertWithImgWheel]
+Name=Convert with ImgWheel
+Icon=image-x-generic
+Exec=imgwheel %F

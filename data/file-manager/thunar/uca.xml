@@ -1,0 +1,15 @@
+<!--
+Thunar Custom Action snippet
+Import into ~/.config/Thunar/uca.xml inside the <actions> section
+-->
+<action>
+    <icon>image-x-generic</icon>
+    <name>Convert with ImgWheel</name>
+    <submenu>ImgWheel</submenu>
+    <unique-id>imgwheel-convert-action</unique-id>
+    <command>imgwheel %F</command>
+    <description>Fast radial image format converter</description>
+    <range></range>
+    <patterns>*</patterns>
+    <image-files/>
+</action>

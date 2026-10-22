@@ -1,0 +1,83 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name for release (e.g. v0.1.0)'
+        required: false
+        default: 'v0.1.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    name: Build & Package Linux x86_64
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            pkg-config \
+            libheif-dev \
+            libde265-dev \
+            libx265-dev \
+            ghostscript \
+            libdav1d-dev \
+            libwayland-dev \
+            libxkbcommon-dev \
+            libx11-dev \
+            libgl1-mesa-dev
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build optimized binary
+        run: cargo build --release --bin imgwheel
+
+      - name: Package release archive
+        run: |
+          PKG_VERSION=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name=="imgwheel") | .version')
+          RELEASE_NAME="imgwheel-v${PKG_VERSION}-x86_64-linux"
+          mkdir -p "${RELEASE_NAME}/bin" "${RELEASE_NAME}/data"
+
+          cp target/release/imgwheel "${RELEASE_NAME}/bin/"
+          cp -r data/* "${RELEASE_NAME}/data/"
+          cp -r packaging "${RELEASE_NAME}/"
+          cp README.md LICENSE CHANGELOG.md "${RELEASE_NAME}/"
+
+          tar -czvf "${RELEASE_NAME}.tar.gz" "${RELEASE_NAME}"
+          sha256sum "${RELEASE_NAME}.tar.gz" > "${RELEASE_NAME}.tar.gz.sha256"
+
+          echo "RELEASE_NAME=${RELEASE_NAME}" >> $GITHUB_ENV
+          echo "PKG_VERSION=${PKG_VERSION}" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            ${{ env.RELEASE_NAME }}.tar.gz
+            ${{ env.RELEASE_NAME }}.tar.gz.sha256
+          generate_release_notes: true
+
+      - name: Upload artifact (on workflow_dispatch)
+        uses: actions/upload-artifact@v4
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        with:
+          name: ${{ env.RELEASE_NAME }}
+          path: |
+            ${{ env.RELEASE_NAME }}.tar.gz
+            ${{ env.RELEASE_NAME }}.tar.gz.sha256

@@ -1,0 +1,29 @@
+[package]
+name = "imgwheel"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+converter = { path = "../converter" }
+config = { path = "../config" }
+clap = { version = "4.6", features = ["derive"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+anyhow = "1.0"
+thiserror = "2.0"
+eframe = { version = "0.37", default-features = false, features = ["default_fonts", "glow", "wayland", "x11"] }
+egui = "0.37"
+notify-rust = "4.18"
+rayon = "1.12"
+ashpd = { version = "0.13", features = ["global_shortcuts"] }
+futures-util = "0.3"
+tokio = { version = "1", features = ["rt", "macros", "net", "io-util", "sync", "time", "rt-multi-thread"] }
+rfd = "0.15"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+image = "0.25"
+libc = "0.2"
+
+[[bin]]
+name = "imgwheel"
+path = "src/main.rs"

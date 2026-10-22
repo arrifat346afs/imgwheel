@@ -1,0 +1,6 @@
+#!/bin/sh
+# Nautilus Script for ImgWheel
+# Place this file in ~/.local/share/nautilus/scripts/
+# Make sure to chmod +x this script.
+
+imgwheel "$@"

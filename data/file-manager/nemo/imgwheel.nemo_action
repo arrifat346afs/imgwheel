@@ -1,0 +1,9 @@
+[Nemo Action]
+Active=true
+Name=Convert with ImgWheel
+Comment=Fast radial image format converter
+Exec=imgwheel %F
+Icon-Name=image-x-generic
+Selection=notnone
+Extensions=png;jpg;jpeg;bmp;webp;avif;heic;heif;eps;
+Quote=double
