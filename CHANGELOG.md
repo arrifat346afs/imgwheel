@@ -2,6 +2,12 @@
 
 All notable changes to **ImgWheel** will be documented in this file.
 
+## [0.1.1] - 2026-10-22
+
+### Fixed
+- Released package no longer opens a file picker when launched from a Hyprland keybind with a file selected in the file manager.
+- Captured file manager selection is retried briefly, so slow clipboard hand-offs no longer fall through to the picker.
+
 ## [0.1.0] - 2026-10-22
 
 ### Added

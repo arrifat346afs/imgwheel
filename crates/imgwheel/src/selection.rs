@@ -475,13 +475,17 @@ pub fn resolve_input_files(cli_files: &[PathBuf], stdin: bool, demo: bool) -> Ve
     if is_file_manager_focused() {
         info!("File manager detected as active window, querying selection via copy shortcut...");
         trigger_copy_in_focused_window();
-        let from_clip = get_files_from_clipboard();
-        if !from_clip.is_empty() {
-            info!(
-                "Successfully captured {} files from file manager selection",
-                from_clip.len()
-            );
-            return from_clip;
+        // File managers publish the clipboard offer a moment after the key event.
+        for _ in 0..8 {
+            let from_clip = get_files_from_clipboard();
+            if !from_clip.is_empty() {
+                info!(
+                    "Successfully captured {} files from file manager selection",
+                    from_clip.len()
+                );
+                return from_clip;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(40));
         }
     }
 

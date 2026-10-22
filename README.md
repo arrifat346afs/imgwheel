@@ -72,11 +72,11 @@ Select one or more images, trigger **ImgWheel**, and an annular wheel menu appea
 Download the `.pkg.tar.zst` package directly from [GitHub Releases](https://github.com/arrifat346afs/imgwheel/releases) and install via pacman:
 
 ```bash
-# Example for v0.1.0:
-sudo pacman -U imgwheel-0.1.0-1-x86_64.pkg.tar.zst
+# Example for v0.1.1:
+sudo pacman -U imgwheel-0.1.1-1-x86_64.pkg.tar.zst
 
 # Or install directly from the URL:
-sudo pacman -U https://github.com/arrifat346afs/imgwheel/releases/download/v0.1.0/imgwheel-0.1.0-1-x86_64.pkg.tar.zst
+sudo pacman -U https://github.com/arrifat346afs/imgwheel/releases/download/v0.1.1/imgwheel-0.1.1-1-x86_64.pkg.tar.zst
 ```
 
 ### Option 2: Arch Linux (Build with PKGBUILD)
