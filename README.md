@@ -1,7 +1,7 @@
-# ImgWheel 🛞
+# ImgWheel 🎡
 
-[![CI](https://github.com/user/imgwheel/actions/workflows/ci.yml/badge.svg)](https://github.com/user/imgwheel/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/user/imgwheel)](https://github.com/user/imgwheel/releases)
+[![CI](https://github.com/arrifat346afs/imgwheel/actions/workflows/ci.yml/badge.svg)](https://github.com/arrifat346afs/imgwheel/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/arrifat346afs/imgwheel)](https://github.com/arrifat346afs/imgwheel/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A fast, beautiful, radial image format converter for Linux, designed primarily for the **Hyprland** (Wayland) compositor.
@@ -65,20 +65,32 @@ Select one or more images, trigger **ImgWheel**, and an annular wheel menu appea
 
 ---
 
-## 🚀 Building & Installation
+## 🚀 Installation & Building
 
-### Option 1: Arch Linux (PKGBUILD)
+### Option 1: Arch Linux (Pre-built Package with `pacman`)
+
+Download the `.pkg.tar.zst` package directly from [GitHub Releases](https://github.com/arrifat346afs/imgwheel/releases) and install via pacman:
+
+```bash
+# Example for v0.1.0:
+sudo pacman -U imgwheel-0.1.0-1-x86_64.pkg.tar.zst
+
+# Or install directly from the URL:
+sudo pacman -U https://github.com/arrifat346afs/imgwheel/releases/download/v0.1.0/imgwheel-0.1.0-1-x86_64.pkg.tar.zst
+```
+
+### Option 2: Arch Linux (Build with PKGBUILD)
 
 ```bash
 cd packaging
 makepkg -si
 ```
 
-### Option 2: Cargo (Manual Build)
+### Option 3: Cargo (Manual Build from Source)
 
 ```bash
 # Clone the repository
-git clone https://github.com/user/imgwheel.git
+git clone https://github.com/arrifat346afs/imgwheel.git
 cd imgwheel
 
 # Build optimized release binary

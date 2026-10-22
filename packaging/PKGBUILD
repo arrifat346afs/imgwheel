@@ -4,7 +4,7 @@ pkgver=0.1.0
 pkgrel=1
 pkgdesc="A fast radial image format converter for Linux (Hyprland / Wayland / X11)"
 arch=('x86_64')
-url="https://github.com/user/imgwheel"
+url="https://github.com/arrifat346afs/imgwheel"
 license=('MIT')
 depends=(
     'gcc-libs'

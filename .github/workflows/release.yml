@@ -47,7 +47,7 @@ jobs:
       - name: Build optimized binary
         run: cargo build --release --bin imgwheel
 
-      - name: Package release archive
+      - name: Package generic release archive (.tar.gz)
         run: |
           PKG_VERSION=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name=="imgwheel") | .version')
           RELEASE_NAME="imgwheel-v${PKG_VERSION}-x86_64-linux"
@@ -63,6 +63,51 @@ jobs:
 
           echo "RELEASE_NAME=${RELEASE_NAME}" >> $GITHUB_ENV
           echo "PKG_VERSION=${PKG_VERSION}" >> $GITHUB_ENV
+
+      - name: Package Arch Linux package (.pkg.tar.zst)
+        run: |
+          mkdir -p packaging/arch-bin
+          cat << 'EOF' > packaging/arch-bin/PKGBUILD
+          pkgname=imgwheel
+          pkgver=__PKG_VER__
+          pkgrel=1
+          pkgdesc="A fast radial image format converter for Linux (Hyprland / Wayland / X11)"
+          arch=('x86_64')
+          url="https://github.com/arrifat346afs/imgwheel"
+          license=('MIT')
+          depends=('gcc-libs' 'libheif' 'ghostscript' 'dav1d' 'wayland' 'libxkbcommon')
+          optdepends=(
+              'wl-clipboard: clipboard reading in daemon mode on Wayland'
+              'xdg-desktop-portal-hyprland: global shortcuts support under Hyprland'
+          )
+
+          package() {
+              install -Dm755 "${startdir}/../../target/release/imgwheel" "${pkgdir}/usr/bin/imgwheel"
+              install -Dm644 "${startdir}/../../data/imgwheel.desktop" "${pkgdir}/usr/share/applications/imgwheel.desktop"
+              install -Dm644 "${startdir}/../../data/imgwheel-daemon.service" "${pkgdir}/usr/lib/systemd/user/imgwheel-daemon.service"
+              install -Dm644 "${startdir}/../../LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+              install -Dm644 "${startdir}/../../README.md" "${pkgdir}/usr/share/doc/${pkgname}/README.md"
+              install -Dm644 "${startdir}/../../CHANGELOG.md" "${pkgdir}/usr/share/doc/${pkgname}/CHANGELOG.md"
+
+              install -Dm755 "${startdir}/../../data/file-manager/nautilus/Convert with ImgWheel" "${pkgdir}/usr/share/doc/${pkgname}/examples/nautilus/Convert with ImgWheel"
+              install -Dm644 "${startdir}/../../data/file-manager/dolphin/imgwheel.desktop" "${pkgdir}/usr/share/doc/${pkgname}/examples/dolphin/imgwheel.desktop"
+              install -Dm644 "${startdir}/../../data/file-manager/thunar/uca.xml" "${pkgdir}/usr/share/doc/${pkgname}/examples/thunar/uca.xml"
+              install -Dm644 "${startdir}/../../data/file-manager/nemo/imgwheel.nemo_action" "${pkgdir}/usr/share/doc/${pkgname}/examples/nemo/imgwheel.nemo_action"
+          }
+          EOF
+          sed -i "s/__PKG_VER__/${PKG_VERSION}/g" packaging/arch-bin/PKGBUILD
+
+          docker run --rm -v "$PWD":/workspace -w /workspace archlinux:base-devel bash -c "
+            useradd -m builder
+            echo 'builder ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+            chown -R builder:builder /workspace
+            su builder -c 'cd /workspace/packaging/arch-bin && makepkg -f'
+          "
+
+          cd packaging/arch-bin
+          ARCH_PKG=$(ls imgwheel-*.pkg.tar.zst)
+          sha256sum "$ARCH_PKG" > "${ARCH_PKG}.sha256"
+          cd ../..
 
       - name: Determine tag name
         id: release_tag
@@ -84,6 +129,8 @@ jobs:
           files: |
             ${{ env.RELEASE_NAME }}.tar.gz
             ${{ env.RELEASE_NAME }}.tar.gz.sha256
+            packaging/arch-bin/*.pkg.tar.zst
+            packaging/arch-bin/*.pkg.tar.zst.sha256
           generate_release_notes: true
 
       - name: Upload artifact
@@ -93,3 +140,5 @@ jobs:
           path: |
             ${{ env.RELEASE_NAME }}.tar.gz
             ${{ env.RELEASE_NAME }}.tar.gz.sha256
+            packaging/arch-bin/*.pkg.tar.zst
+            packaging/arch-bin/*.pkg.tar.zst.sha256
