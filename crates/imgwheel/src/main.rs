@@ -362,7 +362,10 @@ fn install_integrations_cli() {
     let nautilus_ext_file = nautilus_ext_dir.join("imgwheel.py");
     let nautilus_code = include_str!("../../../data/file-manager/nautilus/imgwheel-nautilus.py");
     if std::fs::write(&nautilus_ext_file, nautilus_code).is_ok() {
-        println!("  ✓ Nautilus Python extension installed at {:?}", nautilus_ext_file);
+        println!(
+            "  ✓ Nautilus Python extension installed at {:?}",
+            nautilus_ext_file
+        );
     }
 
     // 2. Nautilus Script
@@ -379,7 +382,10 @@ fn install_integrations_cli() {
                 std::fs::Permissions::from_mode(0o755),
             );
         }
-        println!("  ✓ Nautilus Script installed at {:?}", nautilus_script_file);
+        println!(
+            "  ✓ Nautilus Script installed at {:?}",
+            nautilus_script_file
+        );
     }
 
     // 3. Dolphin Service Menus
@@ -411,7 +417,10 @@ fn install_integrations_cli() {
     let desktop_file = apps_dir.join("imgwheel.desktop");
     let desktop_code = include_str!("../../../data/imgwheel.desktop");
     if std::fs::write(&desktop_file, desktop_code).is_ok() {
-        println!("  ✓ Desktop application entry installed at {:?}", desktop_file);
+        println!(
+            "  ✓ Desktop application entry installed at {:?}",
+            desktop_file
+        );
     }
 
     println!("\nAll integrations installed successfully!");

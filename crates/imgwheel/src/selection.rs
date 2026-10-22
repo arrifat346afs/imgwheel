@@ -191,7 +191,10 @@ pub fn write_selection_file(paths: &[PathBuf]) -> Result<()> {
 /// Queries the focused window's class name via Hyprland or X11.
 pub fn get_active_window_class() -> Option<String> {
     // 1. Wayland / Hyprland
-    if let Ok(output) = Command::new("hyprctl").args(["activewindow", "-j"]).output() {
+    if let Ok(output) = Command::new("hyprctl")
+        .args(["activewindow", "-j"])
+        .output()
+    {
         if output.status.success() {
             if let Ok(val) = serde_json::from_slice::<serde_json::Value>(&output.stdout) {
                 if let Some(class) = val.get("class").and_then(|v| v.as_str()) {
@@ -361,11 +364,7 @@ pub fn get_files_from_clipboard() -> Vec<PathBuf> {
 pub fn parse_uri_or_path_list(raw: &str, out: &mut Vec<PathBuf>) {
     for line in raw.lines() {
         let trimmed = line.trim();
-        if trimmed.is_empty()
-            || trimmed.starts_with('#')
-            || trimmed == "copy"
-            || trimmed == "cut"
-        {
+        if trimmed.is_empty() || trimmed.starts_with('#') || trimmed == "copy" || trimmed == "cut" {
             continue;
         }
 
@@ -422,11 +421,7 @@ pub fn get_image_from_clipboard() -> Option<PathBuf> {
 /// 6. Clipboard file URIs
 /// 7. Clipboard raw image bytes
 /// 8. Fallback native file picker
-pub fn resolve_input_files(
-    cli_files: &[PathBuf],
-    stdin: bool,
-    demo: bool,
-) -> Vec<PathBuf> {
+pub fn resolve_input_files(cli_files: &[PathBuf], stdin: bool, demo: bool) -> Vec<PathBuf> {
     let mut files = Vec::new();
 
     // 1. Demo
@@ -529,10 +524,7 @@ mod tests {
     fn test_percent_decode() {
         assert_eq!(percent_decode("hello%20world"), "hello world");
         assert_eq!(percent_decode("file%3A%2F%2Ftest"), "file://test");
-        assert_eq!(
-            percent_decode("%E6%97%A5%E6%9C%AC%E8%AA%9E"),
-            "日本語"
-        );
+        assert_eq!(percent_decode("%E6%97%A5%E6%9C%AC%E8%AA%9E"), "日本語");
         assert_eq!(percent_decode("plain_string"), "plain_string");
         assert_eq!(percent_decode("incomplete%"), "incomplete%");
         assert_eq!(percent_decode("incomplete%2"), "incomplete%2");
@@ -543,10 +535,7 @@ mod tests {
         let tmp_file = std::env::temp_dir().join("imgwheel_test_img.png");
         let _ = image::RgbaImage::new(10, 10).save(&tmp_file);
 
-        let list = format!(
-            "# comment\ncopy\nfile://{}\n",
-            tmp_file.to_string_lossy()
-        );
+        let list = format!("# comment\ncopy\nfile://{}\n", tmp_file.to_string_lossy());
         let mut out = Vec::new();
         parse_uri_or_path_list(&list, &mut out);
         assert_eq!(out.len(), 1);
@@ -561,7 +550,10 @@ mod tests {
         let uri = format!("file://{}", tmp_file.to_string_lossy().replace(' ', "%20"));
         let resolved = sanitize_and_resolve_path(&uri);
         assert!(resolved.is_some());
-        assert_eq!(resolved.unwrap(), tmp_file.canonicalize().unwrap_or(tmp_file));
+        assert_eq!(
+            resolved.unwrap(),
+            tmp_file.canonicalize().unwrap_or(tmp_file)
+        );
     }
 
     #[test]
